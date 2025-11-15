@@ -10,6 +10,8 @@ const FILE_PATHS: Record<SlashCommandId, string> = {
   proposal: ".codex/prompts/openspec-proposal.md",
   apply: ".codex/prompts/openspec-apply.md",
   archive: ".codex/prompts/openspec-archive.md",
+  research: ".codex/prompts/openspec-research.md",
+  audit: ".codex/prompts/openspec-audit.md",
 };
 
 export class CodexSlashCommandConfigurator extends SlashCommandConfigurator {
@@ -42,27 +44,43 @@ argument-hint: change-id
 ---
 
 $ARGUMENTS`,
+      research: `---
+description: Research external dependencies and generate implementation guides.
+argument-hint: dependency or topic
+---
+
+$ARGUMENTS`,
+      audit: `---
+description: Validate and augment specs against research findings.
+argument-hint: spec or change-id
+---
+
+$ARGUMENTS`,
     };
     return frontmatter[id];
   }
 
   private getGlobalPromptsDir(): string {
-    const home = (process.env.CODEX_HOME && process.env.CODEX_HOME.trim())
-      ? process.env.CODEX_HOME.trim()
-      : FileSystemUtils.joinPath(os.homedir(), ".codex");
+    const home =
+      process.env.CODEX_HOME && process.env.CODEX_HOME.trim()
+        ? process.env.CODEX_HOME.trim()
+        : FileSystemUtils.joinPath(os.homedir(), ".codex");
     return FileSystemUtils.joinPath(home, "prompts");
   }
 
   // Codex discovers prompts globally. Generate directly in the global directory
   // and wrap shared body with markers.
-  async generateAll(projectPath: string, _openspecDir: string): Promise<string[]> {
+  async generateAll(
+    projectPath: string,
+    _openspecDir: string,
+  ): Promise<string[]> {
     const createdOrUpdated: string[] = [];
     for (const target of this.getTargets()) {
       const body = TemplateManager.getSlashCommandBody(target.id).trim();
       const promptsDir = this.getGlobalPromptsDir();
       const filePath = FileSystemUtils.joinPath(
         promptsDir,
-        path.basename(target.path)
+        path.basename(target.path),
       );
 
       await FileSystemUtils.createDirectory(path.dirname(filePath));
@@ -73,7 +91,9 @@ $ARGUMENTS`,
         const frontmatter = this.getFrontmatter(target.id);
         const sections: string[] = [];
         if (frontmatter) sections.push(frontmatter.trim());
-        sections.push(`${OPENSPEC_MARKERS.start}\n${body}\n${OPENSPEC_MARKERS.end}`);
+        sections.push(
+          `${OPENSPEC_MARKERS.start}\n${body}\n${OPENSPEC_MARKERS.end}`,
+        );
         await FileSystemUtils.writeFile(filePath, sections.join("\n") + "\n");
       }
 
@@ -82,13 +102,16 @@ $ARGUMENTS`,
     return createdOrUpdated;
   }
 
-  async updateExisting(projectPath: string, _openspecDir: string): Promise<string[]> {
+  async updateExisting(
+    projectPath: string,
+    _openspecDir: string,
+  ): Promise<string[]> {
     const updated: string[] = [];
     for (const target of this.getTargets()) {
       const promptsDir = this.getGlobalPromptsDir();
       const filePath = FileSystemUtils.joinPath(
         promptsDir,
-        path.basename(target.path)
+        path.basename(target.path),
       );
       if (await FileSystemUtils.fileExists(filePath)) {
         const body = TemplateManager.getSlashCommandBody(target.id).trim();
@@ -100,7 +123,11 @@ $ARGUMENTS`,
   }
 
   // Update both frontmatter and body in an existing file
-  private async updateFullFile(filePath: string, id: SlashCommandId, body: string): Promise<void> {
+  private async updateFullFile(
+    filePath: string,
+    id: SlashCommandId,
+    body: string,
+  ): Promise<void> {
     const content = await FileSystemUtils.readFile(filePath);
     const startIndex = content.indexOf(OPENSPEC_MARKERS.start);
 
@@ -112,7 +139,9 @@ $ARGUMENTS`,
     const frontmatter = this.getFrontmatter(id);
     const sections: string[] = [];
     if (frontmatter) sections.push(frontmatter.trim());
-    sections.push(`${OPENSPEC_MARKERS.start}\n${body}\n${OPENSPEC_MARKERS.end}`);
+    sections.push(
+      `${OPENSPEC_MARKERS.start}\n${body}\n${OPENSPEC_MARKERS.end}`,
+    );
 
     await FileSystemUtils.writeFile(filePath, sections.join("\n") + "\n");
   }

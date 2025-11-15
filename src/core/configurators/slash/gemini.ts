@@ -1,22 +1,27 @@
-import { FileSystemUtils } from '../../../utils/file-system.js';
-import { SlashCommandConfigurator } from './base.js';
-import { SlashCommandId, TemplateManager } from '../../templates/index.js';
-import { OPENSPEC_MARKERS } from '../../config.js';
+import { FileSystemUtils } from "../../../utils/file-system.js";
+import { SlashCommandConfigurator } from "./base.js";
+import { SlashCommandId, TemplateManager } from "../../templates/index.js";
+import { OPENSPEC_MARKERS } from "../../config.js";
 
 const FILE_PATHS: Record<SlashCommandId, string> = {
-  proposal: '.gemini/commands/openspec/proposal.toml',
-  apply: '.gemini/commands/openspec/apply.toml',
-  archive: '.gemini/commands/openspec/archive.toml'
+  proposal: ".gemini/commands/openspec/proposal.toml",
+  apply: ".gemini/commands/openspec/apply.toml",
+  archive: ".gemini/commands/openspec/archive.toml",
+  research: ".gemini/commands/openspec/research.toml",
+  audit: ".gemini/commands/openspec/audit.toml",
 };
 
 const DESCRIPTIONS: Record<SlashCommandId, string> = {
-  proposal: 'Scaffold a new OpenSpec change and validate strictly.',
-  apply: 'Implement an approved OpenSpec change and keep tasks in sync.',
-  archive: 'Archive a deployed OpenSpec change and update specs.'
+  proposal: "Scaffold a new OpenSpec change and validate strictly.",
+  apply: "Implement an approved OpenSpec change and keep tasks in sync.",
+  archive: "Archive a deployed OpenSpec change and update specs.",
+  research:
+    "Research external dependencies and generate implementation guides.",
+  audit: "Validate and augment specs against research findings.",
 };
 
 export class GeminiSlashCommandConfigurator extends SlashCommandConfigurator {
-  readonly toolId = 'gemini';
+  readonly toolId = "gemini";
   readonly isAvailable = true;
 
   protected getRelativePath(id: SlashCommandId): string {
@@ -29,7 +34,10 @@ export class GeminiSlashCommandConfigurator extends SlashCommandConfigurator {
   }
 
   // Override to generate TOML format with markers inside the prompt field
-  async generateAll(projectPath: string, _openspecDir: string): Promise<string[]> {
+  async generateAll(
+    projectPath: string,
+    _openspecDir: string,
+  ): Promise<string[]> {
     const createdOrUpdated: string[] = [];
 
     for (const target of this.getTargets()) {

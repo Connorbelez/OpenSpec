@@ -7,6 +7,8 @@ const FILE_PATHS: Record<SlashCommandId, string> = {
   proposal: ".opencode/command/openspec-proposal.md",
   apply: ".opencode/command/openspec-apply.md",
   archive: ".opencode/command/openspec-archive.md",
+  research: ".opencode/command/openspec-research.md",
+  audit: ".opencode/command/openspec-audit.md",
 };
 
 const FRONTMATTER: Record<SlashCommandId, string> = {
@@ -36,6 +38,24 @@ description: Archive a deployed OpenSpec change and update specs.
   $ARGUMENTS
 </ChangeId>
 `,
+  research: `---
+agent: build
+description: Research external dependencies and generate implementation guides.
+---
+The user wants to research external dependencies. Use the openspec instructions to research and generate implementation guides.
+<ResearchRequest>
+  $ARGUMENTS
+</ResearchRequest>
+`,
+  audit: `---
+agent: build
+description: Validate and augment specs against research findings.
+---
+The user wants to audit specs against research findings. Use the openspec instructions to validate and augment specs.
+<AuditRequest>
+  $ARGUMENTS
+</AuditRequest>
+`,
 };
 
 export class OpenCodeSlashCommandConfigurator extends SlashCommandConfigurator {
@@ -50,13 +70,19 @@ export class OpenCodeSlashCommandConfigurator extends SlashCommandConfigurator {
     return FRONTMATTER[id];
   }
 
-  async generateAll(projectPath: string, _openspecDir: string): Promise<string[]> {
+  async generateAll(
+    projectPath: string,
+    _openspecDir: string,
+  ): Promise<string[]> {
     const createdOrUpdated = await super.generateAll(projectPath, _openspecDir);
     await this.rewriteArchiveFile(projectPath);
     return createdOrUpdated;
   }
 
-  async updateExisting(projectPath: string, _openspecDir: string): Promise<string[]> {
+  async updateExisting(
+    projectPath: string,
+    _openspecDir: string,
+  ): Promise<string[]> {
     const updated = await super.updateExisting(projectPath, _openspecDir);
     const rewroteArchive = await this.rewriteArchiveFile(projectPath);
     if (rewroteArchive && !updated.includes(FILE_PATHS.archive)) {
@@ -66,8 +92,11 @@ export class OpenCodeSlashCommandConfigurator extends SlashCommandConfigurator {
   }
 
   private async rewriteArchiveFile(projectPath: string): Promise<boolean> {
-    const archivePath = FileSystemUtils.joinPath(projectPath, FILE_PATHS.archive);
-    if (!await FileSystemUtils.fileExists(archivePath)) {
+    const archivePath = FileSystemUtils.joinPath(
+      projectPath,
+      FILE_PATHS.archive,
+    );
+    if (!(await FileSystemUtils.fileExists(archivePath))) {
       return false;
     }
 
@@ -79,7 +108,9 @@ export class OpenCodeSlashCommandConfigurator extends SlashCommandConfigurator {
       sections.push(frontmatter.trim());
     }
 
-    sections.push(`${OPENSPEC_MARKERS.start}\n${body}\n${OPENSPEC_MARKERS.end}`);
+    sections.push(
+      `${OPENSPEC_MARKERS.start}\n${body}\n${OPENSPEC_MARKERS.end}`,
+    );
     await FileSystemUtils.writeFile(archivePath, sections.join("\n") + "\n");
     return true;
   }

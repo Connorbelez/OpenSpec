@@ -1,10 +1,12 @@
-import { SlashCommandConfigurator } from './base.js';
-import { SlashCommandId } from '../../templates/index.js';
+import { SlashCommandConfigurator } from "./base.js";
+import { SlashCommandId } from "../../templates/index.js";
 
 const FILE_PATHS: Record<SlashCommandId, string> = {
-  proposal: '.amazonq/prompts/openspec-proposal.md',
-  apply: '.amazonq/prompts/openspec-apply.md',
-  archive: '.amazonq/prompts/openspec-archive.md'
+  proposal: ".amazonq/prompts/openspec-proposal.md",
+  apply: ".amazonq/prompts/openspec-apply.md",
+  archive: ".amazonq/prompts/openspec-archive.md",
+  research: ".amazonq/prompts/openspec-research.md",
+  audit: ".amazonq/prompts/openspec-audit.md",
 };
 
 const FRONTMATTER: Record<SlashCommandId, string> = {
@@ -34,11 +36,29 @@ The user wants to archive the following deployed change. Use the openspec instru
 
 <ChangeId>
   $ARGUMENTS
-</ChangeId>`
+</ChangeId>`,
+  research: `---
+description: Research external dependencies and generate implementation guides.
+---
+
+The user wants to research external dependencies. Use the openspec instructions to research and generate implementation guides.
+
+<ResearchRequest>
+  $ARGUMENTS
+</ResearchRequest>`,
+  audit: `---
+description: Validate and augment specs against research findings.
+---
+
+The user wants to audit specs against research findings. Use the openspec instructions to validate and augment specs.
+
+<AuditRequest>
+  $ARGUMENTS
+</AuditRequest>`,
 };
 
 export class AmazonQSlashCommandConfigurator extends SlashCommandConfigurator {
-  readonly toolId = 'amazon-q';
+  readonly toolId = "amazon-q";
   readonly isAvailable = true;
 
   protected getRelativePath(id: SlashCommandId): string {

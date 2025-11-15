@@ -2,20 +2,22 @@
  * Qwen slash command configurator for OpenSpec integration.
  * This class handles the generation of Qwen-specific slash command files
  * in the .qwen/commands directory structure.
- * 
+ *
  * @implements {SlashCommandConfigurator}
  */
-import { SlashCommandConfigurator } from './base.js';
-import { SlashCommandId } from '../../templates/index.js';
+import { SlashCommandConfigurator } from "./base.js";
+import { SlashCommandId } from "../../templates/index.js";
 
-/** 
+/**
  * Mapping of slash command IDs to their corresponding file paths in .qwen/commands directory.
  * @type {Record<SlashCommandId, string>}
  */
 const FILE_PATHS: Record<SlashCommandId, string> = {
-  proposal: '.qwen/commands/openspec-proposal.md',
-  apply: '.qwen/commands/openspec-apply.md',
-  archive: '.qwen/commands/openspec-archive.md'
+  proposal: ".qwen/commands/openspec-proposal.md",
+  apply: ".qwen/commands/openspec-apply.md",
+  archive: ".qwen/commands/openspec-archive.md",
+  research: ".qwen/commands/openspec-research.md",
+  audit: ".qwen/commands/openspec-audit.md",
 };
 
 /**
@@ -41,13 +43,25 @@ name: /openspec-archive
 id: openspec-archive
 category: OpenSpec
 description: Archive a deployed OpenSpec change and update specs.
----`
+---`,
+  research: `---
+name: /openspec-research
+id: openspec-research
+category: OpenSpec
+description: Research external dependencies and generate implementation guides.
+---`,
+  audit: `---
+name: /openspec-audit
+id: openspec-audit
+category: OpenSpec
+description: Validate and augment specs against research findings.
+---`,
 };
 
 /**
  * QwenSlashCommandConfigurator class provides integration with Qwen Code
  * by creating the necessary slash command files in the .qwen/commands directory.
- * 
+ *
  * The slash commands include:
  * - /openspec-proposal: Create an OpenSpec change proposal
  * - /openspec-apply: Apply an approved OpenSpec change
@@ -55,8 +69,8 @@ description: Archive a deployed OpenSpec change and update specs.
  */
 export class QwenSlashCommandConfigurator extends SlashCommandConfigurator {
   /** Unique identifier for the Qwen tool */
-  readonly toolId = 'qwen';
-  
+  readonly toolId = "qwen";
+
   /** Availability status for the Qwen tool */
   readonly isAvailable = true;
 

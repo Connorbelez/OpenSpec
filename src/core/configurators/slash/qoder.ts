@@ -1,5 +1,5 @@
-import { SlashCommandConfigurator } from './base.js';
-import { SlashCommandId } from '../../templates/index.js';
+import { SlashCommandConfigurator } from "./base.js";
+import { SlashCommandId } from "../../templates/index.js";
 
 /**
  * File paths for Qoder slash commands
@@ -8,13 +8,19 @@ import { SlashCommandId } from '../../templates/index.js';
  */
 const FILE_PATHS: Record<SlashCommandId, string> = {
   // Create and validate new change proposals
-  proposal: '.qoder/commands/openspec/proposal.md',
-  
+  proposal: ".qoder/commands/openspec/proposal.md",
+
   // Implement approved changes with task tracking
-  apply: '.qoder/commands/openspec/apply.md',
-  
+  apply: ".qoder/commands/openspec/apply.md",
+
   // Archive completed changes and update specs
-  archive: '.qoder/commands/openspec/archive.md'
+  archive: ".qoder/commands/openspec/archive.md",
+
+  // Research external dependencies and generate implementation guides
+  research: ".qoder/commands/openspec/research.md",
+
+  // Validate and augment specs against research findings
+  audit: ".qoder/commands/openspec/audit.md",
 };
 
 /**
@@ -40,28 +46,40 @@ name: OpenSpec: Archive
 description: Archive a deployed OpenSpec change and update specs.
 category: OpenSpec
 tags: [openspec, archive]
----`
+---`,
+  research: `---
+name: OpenSpec: Research
+description: Research external dependencies and generate implementation guides.
+category: OpenSpec
+tags: [openspec, research]
+---`,
+  audit: `---
+name: OpenSpec: Audit
+description: Validate and augment specs against research findings.
+category: OpenSpec
+tags: [openspec, audit]
+---`,
 };
 
 /**
  * Qoder Slash Command Configurator
- * 
+ *
  * Manages OpenSpec slash commands for Qoder AI assistant.
  * Creates three workflow commands: proposal, apply, and archive.
  * Uses colon-separated command format (/openspec:proposal).
- * 
+ *
  * @extends {SlashCommandConfigurator}
  */
 export class QoderSlashCommandConfigurator extends SlashCommandConfigurator {
   /** Unique identifier for Qoder tool */
-  readonly toolId = 'qoder';
-  
+  readonly toolId = "qoder";
+
   /** Indicates slash commands are available for this tool */
   readonly isAvailable = true;
 
   /**
    * Get relative file path for a slash command
-   * 
+   *
    * @param {SlashCommandId} id - Command identifier (proposal, apply, or archive)
    * @returns {string} Relative path from project root to command file
    */
@@ -71,10 +89,10 @@ export class QoderSlashCommandConfigurator extends SlashCommandConfigurator {
 
   /**
    * Get YAML frontmatter for a slash command
-   * 
+   *
    * Frontmatter defines how the command appears in Qoder's UI,
    * including display name, description, and categorization.
-   * 
+   *
    * @param {SlashCommandId} id - Command identifier (proposal, apply, or archive)
    * @returns {string} YAML frontmatter block with command metadata
    */

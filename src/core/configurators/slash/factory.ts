@@ -1,10 +1,12 @@
-import { SlashCommandConfigurator } from './base.js';
-import { SlashCommandId } from '../../templates/index.js';
+import { SlashCommandConfigurator } from "./base.js";
+import { SlashCommandId } from "../../templates/index.js";
 
 const FILE_PATHS: Record<SlashCommandId, string> = {
-  proposal: '.factory/commands/openspec-proposal.md',
-  apply: '.factory/commands/openspec-apply.md',
-  archive: '.factory/commands/openspec-archive.md'
+  proposal: ".factory/commands/openspec-proposal.md",
+  apply: ".factory/commands/openspec-apply.md",
+  archive: ".factory/commands/openspec-archive.md",
+  research: ".factory/commands/openspec-research.md",
+  audit: ".factory/commands/openspec-audit.md",
 };
 
 const FRONTMATTER: Record<SlashCommandId, string> = {
@@ -19,11 +21,19 @@ argument-hint: change-id
   archive: `---
 description: Archive a deployed OpenSpec change and update specs.
 argument-hint: change-id
----`
+---`,
+  research: `---
+description: Research external dependencies and generate implementation guides.
+argument-hint: dependency or topic
+---`,
+  audit: `---
+description: Validate and augment specs against research findings.
+argument-hint: spec or change-id
+---`,
 };
 
 export class FactorySlashCommandConfigurator extends SlashCommandConfigurator {
-  readonly toolId = 'factory';
+  readonly toolId = "factory";
   readonly isAvailable = true;
 
   protected getRelativePath(id: SlashCommandId): string {

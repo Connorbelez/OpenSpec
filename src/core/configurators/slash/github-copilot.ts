@@ -1,10 +1,12 @@
-import { SlashCommandConfigurator } from './base.js';
-import { SlashCommandId } from '../../templates/index.js';
+import { SlashCommandConfigurator } from "./base.js";
+import { SlashCommandId } from "../../templates/index.js";
 
 const FILE_PATHS: Record<SlashCommandId, string> = {
-  proposal: '.github/prompts/openspec-proposal.prompt.md',
-  apply: '.github/prompts/openspec-apply.prompt.md',
-  archive: '.github/prompts/openspec-archive.prompt.md'
+  proposal: ".github/prompts/openspec-proposal.prompt.md",
+  apply: ".github/prompts/openspec-apply.prompt.md",
+  archive: ".github/prompts/openspec-archive.prompt.md",
+  research: ".github/prompts/openspec-research.prompt.md",
+  audit: ".github/prompts/openspec-audit.prompt.md",
 };
 
 const FRONTMATTER: Record<SlashCommandId, string> = {
@@ -22,11 +24,21 @@ $ARGUMENTS`,
 description: Archive a deployed OpenSpec change and update specs.
 ---
 
-$ARGUMENTS`
+$ARGUMENTS`,
+  research: `---
+description: Research external dependencies and generate implementation guides.
+---
+
+$ARGUMENTS`,
+  audit: `---
+description: Validate and augment specs against research findings.
+---
+
+$ARGUMENTS`,
 };
 
 export class GitHubCopilotSlashCommandConfigurator extends SlashCommandConfigurator {
-  readonly toolId = 'github-copilot';
+  readonly toolId = "github-copilot";
   readonly isAvailable = true;
 
   protected getRelativePath(id: SlashCommandId): string {

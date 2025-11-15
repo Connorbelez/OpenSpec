@@ -1,9 +1,9 @@
-import path from 'path';
-import { FileSystemUtils } from '../utils/file-system.js';
-import { OPENSPEC_DIR_NAME } from './config.js';
-import { ToolRegistry } from './configurators/registry.js';
-import { SlashCommandRegistry } from './configurators/slash/registry.js';
-import { agentsTemplate } from './templates/agents-template.js';
+import path from "path";
+import { FileSystemUtils } from "../utils/file-system.js";
+import { OPENSPEC_DIR_NAME } from "./config.js";
+import { ToolRegistry } from "./configurators/registry.js";
+import { SlashCommandRegistry } from "./configurators/slash/registry.js";
+import { agentsTemplate } from "./templates/agents-template.js";
 
 export class UpdateCommand {
   async execute(projectPath: string): Promise<void> {
@@ -12,12 +12,14 @@ export class UpdateCommand {
     const openspecPath = path.join(resolvedProjectPath, openspecDirName);
 
     // 1. Check openspec directory exists
-    if (!await FileSystemUtils.directoryExists(openspecPath)) {
-      throw new Error(`No OpenSpec directory found. Run 'openspec init' first.`);
+    if (!(await FileSystemUtils.directoryExists(openspecPath))) {
+      throw new Error(
+        `No OpenSpec directory found. Run 'openspec init' first.`,
+      );
     }
 
     // 2. Update AGENTS.md (full replacement)
-    const agentsPath = path.join(openspecPath, 'AGENTS.md');
+    const agentsPath = path.join(openspecPath, "AGENTS.md");
 
     await FileSystemUtils.writeFile(agentsPath, agentsTemplate);
 
@@ -33,20 +35,23 @@ export class UpdateCommand {
     for (const configurator of configurators) {
       const configFilePath = path.join(
         resolvedProjectPath,
-        configurator.configFileName
+        configurator.configFileName,
       );
       const fileExists = await FileSystemUtils.fileExists(configFilePath);
       const shouldConfigure =
-        fileExists || configurator.configFileName === 'AGENTS.md';
+        fileExists || configurator.configFileName === "AGENTS.md";
 
       if (!shouldConfigure) {
         continue;
       }
 
       try {
-        if (fileExists && !await FileSystemUtils.canWriteFile(configFilePath)) {
+        if (
+          fileExists &&
+          !(await FileSystemUtils.canWriteFile(configFilePath))
+        ) {
           throw new Error(
-            `Insufficient permissions to modify ${configurator.configFileName}`
+            `Insufficient permissions to modify ${configurator.configFileName}`,
           );
         }
 
@@ -61,7 +66,7 @@ export class UpdateCommand {
         console.error(
           `Failed to update ${configurator.configFileName}: ${
             error instanceof Error ? error.message : String(error)
-          }`
+          }`,
         );
       }
     }
@@ -72,9 +77,9 @@ export class UpdateCommand {
       }
 
       try {
-        const updated = await slashConfigurator.updateExisting(
+        const updated = await slashConfigurator.generateAll(
           resolvedProjectPath,
-          openspecPath
+          openspecPath,
         );
         updatedSlashFiles.push(...updated);
       } catch (error) {
@@ -82,47 +87,47 @@ export class UpdateCommand {
         console.error(
           `Failed to update slash commands for ${slashConfigurator.toolId}: ${
             error instanceof Error ? error.message : String(error)
-          }`
+          }`,
         );
       }
     }
 
     const summaryParts: string[] = [];
-    const instructionFiles: string[] = ['openspec/AGENTS.md'];
+    const instructionFiles: string[] = ["openspec/AGENTS.md"];
 
-    if (updatedFiles.includes('AGENTS.md')) {
+    if (updatedFiles.includes("AGENTS.md")) {
       instructionFiles.push(
-        createdFiles.includes('AGENTS.md') ? 'AGENTS.md (created)' : 'AGENTS.md'
+        createdFiles.includes("AGENTS.md")
+          ? "AGENTS.md (created)"
+          : "AGENTS.md",
       );
     }
 
     summaryParts.push(
-      `Updated OpenSpec instructions (${instructionFiles.join(', ')})`
+      `Updated OpenSpec instructions (${instructionFiles.join(", ")})`,
     );
 
-    const aiToolFiles = updatedFiles.filter((file) => file !== 'AGENTS.md');
+    const aiToolFiles = updatedFiles.filter((file) => file !== "AGENTS.md");
     if (aiToolFiles.length > 0) {
-      summaryParts.push(`Updated AI tool files: ${aiToolFiles.join(', ')}`);
+      summaryParts.push(`Updated AI tool files: ${aiToolFiles.join(", ")}`);
     }
 
     if (updatedSlashFiles.length > 0) {
       // Normalize to forward slashes for cross-platform log consistency
-      const normalized = updatedSlashFiles.map((p) => p.replace(/\\/g, '/'));
-      summaryParts.push(`Updated slash commands: ${normalized.join(', ')}`);
+      const normalized = updatedSlashFiles.map((p) => p.replace(/\\/g, "/"));
+      summaryParts.push(`Updated slash commands: ${normalized.join(", ")}`);
     }
 
     const failedItems = [
       ...failedFiles,
-      ...failedSlashTools.map(
-        (toolId) => `slash command refresh (${toolId})`
-      ),
+      ...failedSlashTools.map((toolId) => `slash command refresh (${toolId})`),
     ];
 
     if (failedItems.length > 0) {
-      summaryParts.push(`Failed to update: ${failedItems.join(', ')}`);
+      summaryParts.push(`Failed to update: ${failedItems.join(", ")}`);
     }
 
-    console.log(summaryParts.join(' | '));
+    console.log(summaryParts.join(" | "));
 
     // No additional notes
   }

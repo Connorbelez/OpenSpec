@@ -1,14 +1,20 @@
-import { FileSystemUtils } from '../../../utils/file-system.js';
-import { TemplateManager, SlashCommandId } from '../../templates/index.js';
-import { OPENSPEC_MARKERS } from '../../config.js';
+import { FileSystemUtils } from "../../../utils/file-system.js";
+import { TemplateManager, SlashCommandId } from "../../templates/index.js";
+import { OPENSPEC_MARKERS } from "../../config.js";
 
 export interface SlashCommandTarget {
   id: SlashCommandId;
   path: string;
-  kind: 'slash';
+  kind: "slash";
 }
 
-const ALL_COMMANDS: SlashCommandId[] = ['proposal', 'apply', 'archive'];
+const ALL_COMMANDS: SlashCommandId[] = [
+  "proposal",
+  "apply",
+  "archive",
+  "research",
+  "audit",
+];
 
 export abstract class SlashCommandConfigurator {
   abstract readonly toolId: string;
@@ -18,11 +24,14 @@ export abstract class SlashCommandConfigurator {
     return ALL_COMMANDS.map((id) => ({
       id,
       path: this.getRelativePath(id),
-      kind: 'slash'
+      kind: "slash",
     }));
   }
 
-  async generateAll(projectPath: string, _openspecDir: string): Promise<string[]> {
+  async generateAll(
+    projectPath: string,
+    _openspecDir: string,
+  ): Promise<string[]> {
     const createdOrUpdated: string[] = [];
 
     for (const target of this.getTargets()) {
@@ -37,8 +46,10 @@ export abstract class SlashCommandConfigurator {
         if (frontmatter) {
           sections.push(frontmatter.trim());
         }
-        sections.push(`${OPENSPEC_MARKERS.start}\n${body}\n${OPENSPEC_MARKERS.end}`);
-        const content = sections.join('\n') + '\n';
+        sections.push(
+          `${OPENSPEC_MARKERS.start}\n${body}\n${OPENSPEC_MARKERS.end}`,
+        );
+        const content = sections.join("\n") + "\n";
         await FileSystemUtils.writeFile(filePath, content);
       }
 
@@ -48,7 +59,10 @@ export abstract class SlashCommandConfigurator {
     return createdOrUpdated;
   }
 
-  async updateExisting(projectPath: string, _openspecDir: string): Promise<string[]> {
+  async updateExisting(
+    projectPath: string,
+    _openspecDir: string,
+  ): Promise<string[]> {
     const updated: string[] = [];
 
     for (const target of this.getTargets()) {
